@@ -50,7 +50,7 @@ export const sendTeamEmail = async (team: string, feedbackDetails: any) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: teamEmail,
-      subject: `New Feedback ${feedbackDetails.priority} Priority Feedback`,
+      subject: `FAME : New ${feedbackDetails.priority} Priority Feedback`,
       text: `
 New Feedback Received:
 

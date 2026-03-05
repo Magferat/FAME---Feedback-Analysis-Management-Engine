@@ -43,6 +43,7 @@ const handleSaveEmails = async () => {
       name: nameFilter || undefined,
       category: categoryFilter || undefined,
       priority: priorityFilter || undefined,
+      
     });
 
     setFeedbacks(res.data);
@@ -51,14 +52,14 @@ const handleSaveEmails = async () => {
   useEffect(() => {
      setCurrentPage(1);
     loadFeedbacks();
-  }, [nameFilter, categoryFilter, priorityFilter]);
+  }, [nameFilter, categoryFilter, priorityFilter, ]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">
-          User Feedback Dashboard
+          FAME
         </h1>
 
         <button
@@ -132,6 +133,12 @@ const handleSaveEmails = async () => {
 
             <span className="px-2 py-1 bg-blue-200 rounded">
               {fb.priority}
+            </span>
+            <span className="px-2 py-1 bg-green-200 rounded">
+              {fb.sentiment}
+            </span>
+            <span className="px-2 py-1 bg-yellow-200 rounded">
+              {fb.team}
             </span>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { sendTeamEmail } from "../services/emailService";
 const router = express.Router();
 
 /**
- * @route POST /api/feedback
+ *  POST /api/feedback
  */
 // router.post("/", async (req, res) => {
 //   try {
@@ -28,10 +28,10 @@ router.post("/", async (req, res) => {
   try {
     const { name, message } = req.body;
 
-    // 1️⃣ Send to AI
+    //  Send to AI
     const aiResult = await analyzeFeedback(message);
 
-    // 2️⃣ Save everything in DB
+    //  Save everything in DB
     const feedback = await Feedback.create({
       name,
       message,
@@ -54,7 +54,7 @@ router.post("/", async (req, res) => {
 });
 
 /**
- * @route GET /api/feedback
+ *  GET /api/feedback
  */
 router.get("/", async (req, res) => {
   try {

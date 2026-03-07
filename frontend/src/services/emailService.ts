@@ -3,6 +3,8 @@ import emailjs from "@emailjs/browser";
 export const sendTeamEmail = async (feedback: any, config: any) => {
   let toEmail = "";
 
+  console.log("sendTeamEmail called with team", feedback.team, "config", config);
+
   if (feedback.team === "Support") {
     toEmail = config.supportEmail;
   }
@@ -16,7 +18,7 @@ export const sendTeamEmail = async (feedback: any, config: any) => {
   }
 
   if (!toEmail) {
-    console.error("No email configured for team:", feedback.team);
+    console.error("No email configured for team:", feedback.team, "- config object", config);
     return;
   }
 

@@ -88,9 +88,15 @@ function App() {
   const [saved, setSaved] = useState(false);
 
   const handleSaveEmails = async () => {
-    await saveConfig({ supportEmail, salesEmail, engineeringEmail });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    const newConfig = { supportEmail, salesEmail, engineeringEmail };
+    try {
+      await saveConfig(newConfig);
+      setConfig(newConfig); // update local config immediately
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error("Failed to save config:", err);
+    }
   };
 
   const loadFeedbacks = async () => {
@@ -113,7 +119,13 @@ function App() {
     const loadConfig = async () => {
       try {
         const res = await getConfig();
-        setConfig(res.data);
+        const data = res.data;
+        setConfig(data);
+        if (data) {
+          setSupportEmail(data.supportEmail || "");
+          setSalesEmail(data.salesEmail || "");
+          setEngineeringEmail(data.engineeringEmail || "");
+        }
       } catch (error) {
         console.error("Failed to load config:", error);
       }

@@ -30,9 +30,9 @@ export const sendTeamEmail = async (feedback: any, config: any) => {
     to_email: toEmail
   };
 
-  const serviceId = import.meta.env.VITE_SERVICE_ID;
-  const templateId = import.meta.env.VITE_TEMPLATE_ID;
-  const publicKey = import.meta.env.VITE_PUBLIC_KEY;
+  const serviceId = "service_h3kvst5";
+  const templateId = "template_dm5ox6k";
+  const publicKey = "i99JPHMpocOkUl7t7";
 
   if (!serviceId || !templateId || !publicKey) {
     console.error("Missing EmailJS environment variables");

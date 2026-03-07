@@ -16,11 +16,26 @@ import nodemailer from "nodemailer";
 //     pass: process.env.EMAIL_PASS
 //   }
 // });
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS, // The 16-character App Password
+//   },
+// });
+
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "my.smtp.host",
+  port: 465,
+  secure: true,
+  connectionTimeout: 10000,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // The 16-character App Password
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    // Accept self-signed or invalid certificates
+    rejectUnauthorized: false,
   },
 });
 
@@ -42,7 +57,7 @@ export const sendTeamEmail = async (team: string, feedbackDetails: any) => {
       return;
     }
 
-    await transporter.sendMail({
+    const mailData = {
       from: process.env.EMAIL_USER,
       to: teamEmail,
       subject: `FAME : New ${feedbackDetails.priority} Priority Feedback`,
@@ -56,6 +71,17 @@ Priority: ${feedbackDetails.priority}
 Sentiment: ${feedbackDetails.sentiment}
 Team: ${feedbackDetails.team}
       `,
+    };
+
+    await new Promise((resolve, reject) => {
+      transporter.sendMail(mailData, (err, info) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          resolve(info);
+        }
+      });
     });
 
     console.log("Email sent successfully");

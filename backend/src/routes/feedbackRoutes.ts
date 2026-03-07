@@ -1,7 +1,6 @@
 import express from "express";
 import Feedback from "../model/Feedback";
 import { analyzeFeedback } from "../services/llmService";
-import { sendTeamEmail } from "../services/emailService";
 
 const router = express.Router();
 
@@ -41,10 +40,7 @@ router.post("/", async (req, res) => {
       team: aiResult?.team,
     });
     
-    //  SEND EMAIL
-    if (aiResult?.team) {
-    await sendTeamEmail(aiResult.team, feedback);
-    }
+
     
     res.status(201).json(feedback);
   } catch (error) {

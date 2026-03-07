@@ -107,6 +107,14 @@ function App() {
     loadFeedbacks();
   }, [nameFilter, categoryFilter, priorityFilter]);
 
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/config")
+      .then(res => res.json())
+      .then(data => setConfig(data));
+  }, []);
+
   const counts = {
     high:     feedbacks.filter(f => f.priority === "High").length,
     medium:   feedbacks.filter(f => f.priority === "Medium").length,
@@ -346,6 +354,7 @@ function App() {
         <FeedbackModal
           onClose={() => setShowModal(false)}
           onSuccess={loadFeedbacks}
+          config={config}
         />
       )}
     </div>

@@ -1,13 +1,15 @@
 
 import { useState } from "react";
 import { createFeedback } from "../services/api";
+import { sendTeamEmail } from "../services/emailService";
 
 interface Props {
   onClose: () => void;
   onSuccess: () => void;
+  config: any;
 }
 
-const FeedbackModal = ({ onClose, onSuccess }: Props) => {
+const FeedbackModal = ({ onClose, onSuccess, config }: Props) => {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,7 +19,10 @@ const FeedbackModal = ({ onClose, onSuccess }: Props) => {
 
     try {
       setLoading(true);
-      await createFeedback({ name, message });
+      const result = await createFeedback({ name, message });
+      if (config) {
+        await sendTeamEmail(result, config);
+      }
       onSuccess();
       onClose();
     } catch (error) {

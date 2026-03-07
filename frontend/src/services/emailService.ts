@@ -36,8 +36,17 @@ export const sendTeamEmail = async (feedback: any, config: any) => {
 
   if (!serviceId || !templateId || !publicKey) {
     console.error("Missing EmailJS environment variables");
+    console.error("VITE_SERVICE_ID:", serviceId);
+    console.error("VITE_TEMPLATE_ID:", templateId);
+    console.error("VITE_PUBLIC_KEY:", publicKey);
     return;
   }
 
-  await emailjs.send(serviceId, templateId, templateParams, publicKey);
+  try {
+    const response = await emailjs.send(serviceId, templateId, templateParams, publicKey);
+    console.log("Email sent successfully to", toEmail, response);
+  } catch (error) {
+    console.error("Email sending failed:", error);
+    throw error;
+  }
 };

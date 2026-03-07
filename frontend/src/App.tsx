@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchFeedbacks } from "./services/api";
 import type { Feedback } from "./types/feedback";
 import FeedbackModal from "./components/FeedbackModal";
-import { saveConfig } from "./services/api";
+import { saveConfig, getConfig } from "./services/api";
 import ThemeToggle from "./components/ThemeToggle";
 import Footer from "./components/Footer";
 
@@ -110,9 +110,15 @@ function App() {
   const [config, setConfig] = useState<any>(null);
 
   useEffect(() => {
-    fetch("/api/config")
-      .then(res => res.json())
-      .then(data => setConfig(data));
+    const loadConfig = async () => {
+      try {
+        const res = await getConfig();
+        setConfig(res.data);
+      } catch (error) {
+        console.error("Failed to load config:", error);
+      }
+    };
+    loadConfig();
   }, []);
 
   const counts = {

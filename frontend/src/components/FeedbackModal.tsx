@@ -19,14 +19,27 @@ const FeedbackModal = ({ onClose, onSuccess, config }: Props) => {
 
     try {
       setLoading(true);
-      const result = await createFeedback({ name, message });
-      if (config) {
-        await sendTeamEmail(result, config);
+      
+      if (!config) {
+        console.warn("Config not loaded yet");
       }
+      
+      const result = await createFeedback({ name, message });
+      console.log("Feedback created:", result.data);
+      
+      if (config) {
+        console.log("Sending email to team:", result.data.team);
+        await sendTeamEmail(result.data, config);
+        console.log("Email sent successfully");
+      } else {
+        console.warn("Config not available, skipping email");
+      }
+      
       onSuccess();
       onClose();
     } catch (error) {
       console.error("Error creating feedback:", error);
+      alert("Error submitting feedback. Check console for details.");
     } finally {
       setLoading(false);
     }

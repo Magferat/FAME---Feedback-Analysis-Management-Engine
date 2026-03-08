@@ -1,4 +1,4 @@
-# User Feedback Intelligence System
+# # FAME - Feedback Analysis Management Engine
 
 A feedback management system with intelligent ticket routing using AI-powered analysis and automated email notifications.
 
@@ -168,7 +168,7 @@ VITE_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
 ## Project Structure
 
 ```
-user-feedback-intelligence-system/
+FAME/
 ├── backend/
 │   ├── src/
 │   │   ├── config/

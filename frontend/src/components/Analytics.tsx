@@ -12,40 +12,86 @@ interface AnalyticsProps {
   saved: boolean;
 }
 
-function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
+const CATEGORIES = ["Technical", "Billing", "General", "Feature Request", "Complaint"] as const;
+const PRIORITIES = ["High", "Medium", "Low"] as const;
+
+const PRIORITY_COLORS = {
+  High:   { bar: "bg-[#c94040]", dot: "bg-[#c94040]", text: "text-[#c94040]",                     pill: "bg-[#9e2a2b]/12 dark:bg-[#9e2a2b]/30" },
+  Medium: { bar: "bg-[#e09f3e]", dot: "bg-[#e09f3e]", text: "text-[#b07020] dark:text-[#e09f3e]", pill: "bg-[#e09f3e]/12 dark:bg-[#e09f3e]/20" },
+  Low:    { bar: "bg-[#5a9aaa]", dot: "bg-[#5a9aaa]", text: "text-[#335c67] dark:text-[#5a9aaa]", pill: "bg-[#335c67]/10 dark:bg-[#335c67]/25" },
+};
+
+function PriorityBreakdownRow({
+  priority, counts, total, grandTotal,
+}: { priority: "High" | "Medium" | "Low"; counts: Record<string, number>; total: number; grandTotal: number }) {
+  const c = PRIORITY_COLORS[priority];
+  const pct = grandTotal > 0 ? Math.round((total / grandTotal) * 100) : 0;
   return (
-    <div className={`flex flex-col items-center justify-center rounded-2xl px-4 py-3 ${color}`}>
-      <span className="text-2xl font-bold leading-none">{value}</span>
-      <span className="text-xs mt-1 opacity-65 font-medium tracking-wide">{label}</span>
+    <div className={`rounded-xl px-3 py-2.5 ${c.pill}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full ${c.dot}`} />
+          <span className={`text-xs font-bold ${c.text}`}>{priority}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base font-bold text-[#1a1a2e] dark:text-[#fff3b0] tabular-nums">{total}</span>
+          <span className="text-[10px] text-[#335c67]/40 dark:text-[#fff3b0]/30">({pct}%)</span>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1">
+        {CATEGORIES.map(cat => counts[cat] > 0 && (
+          <div key={cat} className="flex items-center gap-1">
+            <span className="text-[10px] text-[#335c67]/60 dark:text-[#fff3b0]/45">{cat.split(" ")[0]}</span>
+            <span className="text-[10px] font-semibold text-[#1a1a2e] dark:text-[#fff3b0]/70">{counts[cat]}</span>
+          </div>
+        ))}
+        {Object.values(counts).every(v => v === 0) && (
+          <span className="text-[10px] text-[#335c67]/30 dark:text-[#fff3b0]/25 italic">No items</span>
+        )}
+      </div>
     </div>
   );
 }
 
-function Analytics({ feedbacks, supportEmail, setSupportEmail, salesEmail, setSalesEmail, engineeringEmail, setEngineeringEmail, handleSaveEmails, saved }: AnalyticsProps) {
-  const counts = {
-    high: feedbacks.filter(f => f.priority === "High").length,
-    medium: feedbacks.filter(f => f.priority === "Medium").length,
-    low: feedbacks.filter(f => f.priority === "Low").length,
-    tech: feedbacks.filter(f => f.category === "Technical").length,
-    billing: feedbacks.filter(f => f.category === "Billing").length,
-    general: feedbacks.filter(f => f.category === "General").length,
-    feature: feedbacks.filter(f => f.category === "Feature Request").length,
-    complaint: feedbacks.filter(f => f.category === "Complaint").length,
-  };
+const inputCls =
+  "w-full rounded-xl border border-[#335c67]/20 dark:border-[#335c67]/35 bg-white dark:bg-[#1a2a3a]/70 text-[#1a1a2e] dark:text-[#fff3b0] placeholder-[#335c67]/40 dark:placeholder-[#fff3b0]/30 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#335c67]/30 transition";
 
-  const inputCls =
-    "w-full rounded-xl border border-[#335c67]/20 dark:border-[#335c67]/35 bg-white dark:bg-[#1a2a3a]/70 text-[#1a1a2e] dark:text-[#fff3b0] placeholder-[#335c67]/40 dark:placeholder-[#fff3b0]/30 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#335c67]/30 transition";
+function Analytics({
+  feedbacks,
+  supportEmail, setSupportEmail,
+  salesEmail, setSalesEmail,
+  engineeringEmail, setEngineeringEmail,
+  handleSaveEmails, saved,
+}: AnalyticsProps) {
+  const total = feedbacks.length;
+
+  const priCounts = Object.fromEntries(
+    PRIORITIES.map(pri => [
+      pri,
+      Object.fromEntries(
+        CATEGORIES.map(cat => [
+          cat,
+          feedbacks.filter(f => f.priority === pri && f.category === cat).length,
+        ])
+      ),
+    ])
+  ) as Record<string, Record<string, number>>;
+
+  const priorityTotals = Object.fromEntries(
+    PRIORITIES.map(p => [p, feedbacks.filter(f => f.priority === p).length])
+  );
 
   return (
-    <aside className="space-y-4 sm:space-y-6 order-2">
+    <aside className="space-y-4 sm:space-y-5 order-2">
+      {/* Team Emails */}
       <div className="bg-white dark:bg-[#1a2a3a]/80 border border-[#335c67]/15 dark:border-[#335c67]/30 rounded-2xl p-4 sm:p-5 shadow-sm">
-        <h2 className="text-xs font-semibold text-[#335c67] dark:text-[#5a9aaa] uppercase tracking-widest mb-3 sm:mb-4">
+        <h2 className="text-xs font-semibold text-[#335c67] dark:text-[#5a9aaa] uppercase tracking-widest mb-3">
           Team Emails
         </h2>
         <div className="space-y-2.5">
-          <input placeholder="Support team email" className={inputCls} value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} />
-          <input placeholder="Sales team email" className={inputCls} value={salesEmail} onChange={(e) => setSalesEmail(e.target.value)} />
-          <input placeholder="Engineering team email" className={inputCls} value={engineeringEmail} onChange={(e) => setEngineeringEmail(e.target.value)} />
+          <input placeholder="Support team email"     className={inputCls} value={supportEmail}     onChange={e => setSupportEmail(e.target.value)} />
+          <input placeholder="Sales team email"       className={inputCls} value={salesEmail}       onChange={e => setSalesEmail(e.target.value)} />
+          <input placeholder="Engineering team email" className={inputCls} value={engineeringEmail} onChange={e => setEngineeringEmail(e.target.value)} />
         </div>
         <button
           onClick={handleSaveEmails}
@@ -59,44 +105,35 @@ function Analytics({ feedbacks, supportEmail, setSupportEmail, salesEmail, setSa
         </button>
       </div>
 
+      {/* Analytics */}
       <div className="bg-white dark:bg-[#1a2a3a]/80 border border-[#335c67]/15 dark:border-[#335c67]/30 rounded-2xl p-4 sm:p-5 shadow-sm">
-        <h2 className="text-xs font-semibold text-[#335c67] dark:text-[#5a9aaa] uppercase tracking-widest mb-3 sm:mb-4">
+        <h2 className="text-xs font-semibold text-[#335c67] dark:text-[#5a9aaa] uppercase tracking-widest mb-4">
           Analytics
         </h2>
-        <div className="text-center mb-4 sm:mb-5">
-          <p className="text-4xl font-bold text-[#1a1a2e] dark:text-[#fff3b0]">{feedbacks.length}</p>
-          <p className="text-xs text-[#335c67]/50 dark:text-[#fff3b0]/35 mt-1 tracking-wide">Total Feedbacks</p>
+
+        <div className="flex items-center justify-center mb-4">
+          <div>
+            <p className="text-4xl font-bold text-[#1a1a2e] text-center dark:text-[#fff3b0] leading-none">{total}</p>
+            <p className="text-[10px] text-[#335c67]/45 dark:text-[#fff3b0]/30 mt-1 tracking-wide uppercase">Total Feedbacks</p>
+          </div>
+          
         </div>
 
-        <p className="text-xs font-semibold text-[#335c67]/50 dark:text-[#fff3b0]/35 uppercase tracking-widest mb-2">Priority</p>
-        <div className="grid grid-cols-3 gap-2 mb-4 sm:mb-5">
-          <StatPill label="High" value={counts.high} color="bg-[#9e2a2b]/10 text-[#9e2a2b] dark:bg-[#9e2a2b]/25 dark:text-[#c94040]" />
-          <StatPill label="Medium" value={counts.medium} color="bg-[#e09f3e]/12 text-[#b07020] dark:bg-[#e09f3e]/20 dark:text-[#e09f3e]" />
-          <StatPill label="Low" value={counts.low} color="bg-[#335c67]/10 text-[#335c67] dark:bg-[#335c67]/25 dark:text-[#5a9aaa]" />
-        </div>
-
-        <p className="text-xs font-semibold text-[#335c67]/50 dark:text-[#fff3b0]/35 uppercase tracking-widest mb-2">Category</p>
-        <div className="space-y-1.5">
-          {[
-            { label: "Technical", val: counts.tech },
-            { label: "Billing", val: counts.billing },
-            { label: "General", val: counts.general },
-            { label: "Feature Request", val: counts.feature },
-            { label: "Complaint", val: counts.complaint },
-          ].map(({ label, val }) => (
-            <div key={label} className="flex items-center justify-between gap-2">
-              <span className="text-sm text-[#335c67]/65 dark:text-[#fff3b0]/50 truncate">{label}</span>
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="h-1.5 rounded-full bg-[#335c67]/12 dark:bg-[#335c67]/25 w-16 sm:w-20 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#335c67] dark:bg-[#5a9aaa] transition-all duration-500"
-                    style={{ width: feedbacks.length ? `${(val / feedbacks.length) * 100}%` : "0%" }}
-                  />
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a2e] dark:text-[#fff3b0] w-4 text-right">{val}</span>
-              </div>
-            </div>
-          ))}
+        <div>
+          <p className="text-[10px] font-bold text-[#335c67]/45 dark:text-[#fff3b0]/30 uppercase tracking-widest mb-2.5">
+            By Priority
+          </p>
+          <div className="space-y-2">
+            {PRIORITIES.map(p => (
+              <PriorityBreakdownRow
+                key={p}
+                priority={p}
+                counts={priCounts[p]}
+                total={priorityTotals[p]}
+                grandTotal={total}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </aside>

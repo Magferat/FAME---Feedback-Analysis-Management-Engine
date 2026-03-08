@@ -4,22 +4,17 @@ import { useEffect, useState, useCallback } from "react";
 import { fetchFeedbacks } from "./services/api";
 import type { Feedback } from "./types/feedback";
 import FeedbackModal from "./components/FeedbackModal";
-import { saveConfig, getConfig } from "./services/api";
 import Header from "./components/Header";
 import FeedbackList from "./components/FeedbackList";
 import Analytics from "./components/Analytics";
 import Footer from "./components/Footer";
-
-interface Config {
-  supportEmail: string;
-  salesEmail: string;
-  engineeringEmail: string;
-}
+import EmailSetupModal from "./components/EmailSetupModal";
 
 function App() {
   const [allFeedbacks, setAllFeedbacks] = useState<Feedback[]>([]);
   const [filteredFeedbacks, setFilteredFeedbacks] = useState<Feedback[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [showEmailSetup, setShowEmailSetup] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
@@ -28,16 +23,11 @@ function App() {
   const [engineeringEmail, setEngineeringEmail] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const handleSaveEmails = async () => {
-    const newConfig = { supportEmail, salesEmail, engineeringEmail };
-    try {
-      await saveConfig(newConfig);
-      setConfig(newConfig);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-    } catch (err) {
-      console.error("Failed to save config:", err);
-    }
+  const handleSaveEmails = () => {
+    const emails = { supportEmail, salesEmail, engineeringEmail };
+    localStorage.setItem("teamEmails", JSON.stringify(emails));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
   };
 
   const loadAllFeedbacks = useCallback(async () => {
@@ -67,24 +57,16 @@ function App() {
     loadFilteredFeedbacks();
   }, [loadFilteredFeedbacks]);
 
-  const [config, setConfig] = useState<Config | null>(null);
-
   useEffect(() => {
-    const loadConfig = async () => {
-      try {
-        const res = await getConfig();
-        const data = res.data;
-        setConfig(data);
-        if (data) {
-          setSupportEmail(data.supportEmail || "");
-          setSalesEmail(data.salesEmail || "");
-          setEngineeringEmail(data.engineeringEmail || "");
-        }
-      } catch (error) {
-        console.error("Failed to load config:", error);
-      }
-    };
-    loadConfig();
+    const storedEmails = localStorage.getItem("teamEmails");
+    if (storedEmails) {
+      const emails = JSON.parse(storedEmails);
+      setSupportEmail(emails.supportEmail || "");
+      setSalesEmail(emails.salesEmail || "");
+      setEngineeringEmail(emails.engineeringEmail || "");
+    } else {
+      setShowEmailSetup(true);
+    }
   }, []);
 
   return (
@@ -97,6 +79,18 @@ function App() {
         .fame-acronym .hl { color: #335c67; font-weight: 600; }
         .dark .fame-acronym .hl { color: #5a9aaa; }
       `}</style>
+
+      <EmailSetupModal
+        isOpen={showEmailSetup}
+        onClose={() => setShowEmailSetup(false)}
+        supportEmail={supportEmail}
+        salesEmail={salesEmail}
+        engineeringEmail={engineeringEmail}
+        onSupportEmailChange={setSupportEmail}
+        onSalesEmailChange={setSalesEmail}
+        onEngineeringEmailChange={setEngineeringEmail}
+        onSave={handleSaveEmails}
+      />
 
       <Header onAddFeedback={() => setShowModal(true)} />
 
@@ -132,7 +126,9 @@ function App() {
             loadAllFeedbacks();
             loadFilteredFeedbacks();
           }}
-          config={config}
+          supportEmail={supportEmail}
+          salesEmail={salesEmail}
+          engineeringEmail={engineeringEmail}
         />
       )}
     </div>

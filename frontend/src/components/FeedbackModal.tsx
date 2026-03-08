@@ -6,10 +6,12 @@ import { sendTeamEmail } from "../services/emailService";
 interface Props {
   onClose: () => void;
   onSuccess: () => void;
-  config: any;
+  supportEmail: string;
+  salesEmail: string;
+  engineeringEmail: string;
 }
 
-const FeedbackModal = ({ onClose, onSuccess, config }: Props) => {
+const FeedbackModal = ({ onClose, onSuccess, supportEmail, salesEmail, engineeringEmail }: Props) => {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,20 +22,13 @@ const FeedbackModal = ({ onClose, onSuccess, config }: Props) => {
     try {
       setLoading(true);
       
-      if (!config) {
-        console.warn("Config not loaded yet");
-      }
-      
       const result = await createFeedback({ name, message });
       console.log("Feedback created:", result.data);
       
-      if (config) {
-        console.log("Sending email to team:", result.data.team);
-        await sendTeamEmail(result.data, config);
-        console.log("Email sent successfully");
-      } else {
-        console.warn("Config not available, skipping email");
-      }
+      const emails = { supportEmail, salesEmail, engineeringEmail };
+      console.log("Sending email to team:", result.data.team);
+      await sendTeamEmail(result.data, emails);
+      console.log("Email sent successfully");
       
       onSuccess();
       onClose();

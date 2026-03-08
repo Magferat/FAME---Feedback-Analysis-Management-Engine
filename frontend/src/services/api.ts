@@ -13,9 +13,3 @@ export const createFeedback = (data: {
   name: string;
   message: string;
 }) => API.post("/feedback", data);
-
-export const saveConfig = (data: any) =>
-  API.post("/config", data);
-
-export const getConfig = () =>
-  API.get("/config");

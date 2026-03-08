@@ -46,8 +46,9 @@ export const sendTeamEmail = async (feedback: any, config: any) => {
 
   try {
     const response = await emailjs.send(serviceId, templateId, templateParams, publicKey);
-    console.log("Email sent successfully to", toEmail, response);
-  } catch (error) {
+    console.log("Email sent successfully to", toEmail);
+  }
+   catch (error) {
     console.error("Email sending failed:", error);
     throw error;
   }
